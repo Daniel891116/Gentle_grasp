@@ -80,9 +80,9 @@ class CommandsCfg:
         asset_name="robot",
         body_name=MISSING,  # will be set by agent env cfg
         resampling_time_range=(5.0, 5.0),
-        debug_vis=True,
+        debug_vis=False,
         ranges=mdp.UniformPoseCommandCfg.Ranges(
-            pos_x=(0.4, 0.6), pos_y=(-0.25, 0.25), pos_z=(0.25, 0.5), roll=(0.0, 0.0), pitch=(0.0, 0.0), yaw=(0.0, 0.0)
+            pos_x=(0.55, 0.55), pos_y=(-0.22,-0.22), pos_z=(0.2, 0.2), roll=(0.0, 0.0), pitch=(0.0, 0.0), yaw=(0.0, 0.0)
         ),
     )
 
@@ -110,6 +110,22 @@ class ObservationsCfg:
         target_object_position = ObsTerm(func=mdp.generated_commands, params={"command_name": "object_pose"})
         actions = ObsTerm(func=mdp.last_action)
         contact_forces = ObsTerm(func=mdp.contact_forces)
+        slipping = ObsTerm(
+            func=mdp.object_is_slipping,
+            params={
+                "robot_cfg": SceneEntityCfg("robot"),
+                "object_cfg": SceneEntityCfg("object"),
+                "velocity_threshold": 0.05,
+                "contact_force_threshold": 0.1,
+            },
+        )
+        rel_vel_norm = ObsTerm(
+            func=mdp.relative_velocity,
+            params={
+                "robot_cfg": SceneEntityCfg("robot"),
+                "object_cfg": SceneEntityCfg("object"),
+            },
+        )
 
         def __post_init__(self):
             self.enable_corruption = True
@@ -117,7 +133,6 @@ class ObservationsCfg:
 
     # observation groups
     policy: PolicyCfg = PolicyCfg()
-
 
 @configclass
 class EventCfg:
@@ -135,19 +150,19 @@ class EventCfg:
         },
     )
 
-    # add friction randomization for the can
-    # object_friction = EventTerm(
-    #     func=mdp.randomize_rigid_body_material,
-    #     mode="reset",  # or "reset" if you accept the overhead
-    #     params={
-    #         "asset_cfg": SceneEntityCfg("object", body_names="Object"),
-    #         "static_friction_range": (0.2, 1.2),
-    #         "dynamic_friction_range": (0.1, 1.0),
-    #         "restitution_range": (0.0, 0.0),
-    #         "num_buckets": 16,
-    #         "make_consistent": True,
-    #     },
-    # )
+    # add friction randomization for the object
+    object_friction = EventTerm(
+        func=mdp.randomize_rigid_body_material,
+        mode="reset",  # or "reset" if you accept the overhead
+        params={
+            "asset_cfg": SceneEntityCfg("object", body_names="Object"),
+            "static_friction_range": (0.3, 0.7),
+            "dynamic_friction_range": (0.3, 0.7),
+            "restitution_range": (0.0, 0.0),
+            "num_buckets": 16,
+            "make_consistent": True,
+        },
+    )
 
 
 @configclass
@@ -214,7 +229,7 @@ class GentleLiftEnvCfg(ManagerBasedRLEnvCfg):
     """Configuration for the gentle lifting environment."""
 
     # Scene settings
-    scene: ObjectTableSceneCfg = ObjectTableSceneCfg(num_envs=4096, env_spacing=2.5)
+    scene: ObjectTableSceneCfg = ObjectTableSceneCfg(num_envs=4096, env_spacing=1.5)
     # Basic settings
     observations: ObservationsCfg = ObservationsCfg()
     actions: ActionsCfg = ActionsCfg()
@@ -229,7 +244,7 @@ class GentleLiftEnvCfg(ManagerBasedRLEnvCfg):
         """Post initialization."""
         # general settings
         self.decimation = 2
-        self.episode_length_s = 10.0
+        self.episode_length_s = 5.0
         # simulation settings
         self.sim.dt = 0.01  # 100Hz
         self.sim.render_interval = self.decimation

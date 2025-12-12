@@ -47,12 +47,12 @@ class FrankaCubeGentleLiftEnvCfg(GentleLiftEnvCfg):
         # Set Cube as object
         self.scene.object = RigidObjectCfg(
             prim_path="{ENV_REGEX_NS}/Object",
-            init_state=RigidObjectCfg.InitialStateCfg(pos=[0.55, -0.23, 0.055], rot=[0.707, -0.707, 0, 0]),
+            init_state=RigidObjectCfg.InitialStateCfg(pos=[0.55, -0.22, 0.055], rot=[0.707, -0.707, 0, 0]),
             spawn=UsdFileCfg(
                 # usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/Blocks/DexCube/dex_cube_instanceable.usd",
-                usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/005_tomato_soup_can.usd",
+                usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/004_sugar_box.usd",
                 # activate_contact_sensors=True,
-                scale=(1.0, 1.0, 1.0),
+                scale=(0.6, 1.0, 1.0),
                 rigid_props=RigidBodyPropertiesCfg(
                     solver_position_iteration_count=16,
                     solver_velocity_iteration_count=1,
@@ -71,12 +71,12 @@ class FrankaCubeGentleLiftEnvCfg(GentleLiftEnvCfg):
 
         # Listens to the required transforms
         marker_cfg = FRAME_MARKER_CFG.copy()
-        marker_cfg.markers["frame"].scale = (0.1, 0.1, 0.1)
+        marker_cfg.markers["frame"].scale = (0.0, 0.0, 0.0)
         marker_cfg.prim_path = "/Visuals/FrameTransformer"
         self.scene.ee_frame = FrameTransformerCfg(
             prim_path="{ENV_REGEX_NS}/Robot/panda_link0",
             debug_vis=False,
-            visualizer_cfg=marker_cfg,
+            # visualizer_cfg=marker_cfg,
             target_frames=[
                 FrameTransformerCfg.FrameCfg(
                     prim_path="{ENV_REGEX_NS}/Robot/panda_hand",
